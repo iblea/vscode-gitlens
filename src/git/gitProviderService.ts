@@ -2504,7 +2504,29 @@ export class GitProviderService implements Disposable {
 			this._pendingRepositories.set(key, promise);
 		}
 
+		const projectPaths = this.getProjectPaths();
+		for (const path of projectPaths) {
+			console.log(`Project path: ${path}`);
+			const uri = this.getAbsoluteUri(path);
+			repository = this.getRepository(uri);
+			if (repository) {
+				Logger.warn("find repository : ", repository.root)
+				return repository;
+			}
+		}
 		return promise;
+	}
+	getProjectPaths(): string[] {
+		const workspaceFolders = workspace.workspaceFolders;
+		if (workspaceFolders) {
+			// workspace project
+			return workspaceFolders.map(folder => folder.uri.fsPath);
+		} else {
+			// directory project
+			return workspace.workspaceFolders?.[0]?.uri.fsPath
+				? [workspace.workspaceFolders[0].uri.fsPath]
+				: [];
+		}
 	}
 
 	@gate()
